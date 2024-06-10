@@ -5,13 +5,12 @@ namespace Piero {
 
 
 void MyMessageElement(std::string message) {
-    // // ImGui::Dummy(ImVec2(0, 12));
-    // // Calculate the height needed for the name text
+    // Calculate the height needed for the name text
     const float maxWidth = 400.0f;
     ImGui::SetWindowFontScale(1.3f);
     ImVec2 messageTextSize = ImGui::CalcTextSize(message.c_str(), nullptr, true, maxWidth);
     ImGui::SetWindowFontScale(1.0f);
-    // // Calculate the total height needed for the outer child
+    // Calculate the total height needed for the outer child
     float totalHeight = messageTextSize.y + ImGui::GetStyle().FramePadding.y * 8; // Adding padding for both texts and child window borders
     float totalWidth = messageTextSize.x + ImGui::GetStyle().FramePadding.x * 8;
 
@@ -42,15 +41,10 @@ void ModalLoginForm(const char* id)  {
         ImGui::SetWindowFontScale(1.3f);
         ImGui::Separator();
         // user name
-
-        if(ImGui::InputText("UserName", UserViewModel::GetInstance()->usernameBufferInput, IM_ARRAYSIZE( UserViewModel::GetInstance()->usernameBufferInput))) {
-
-
-        }
+        if(ImGui::InputText("UserName", UserViewModel::GetInstance()->usernameBufferInput, IM_ARRAYSIZE(UserViewModel::GetInstance()->usernameBufferInput))) {}
         
         if(ImGui::InputText("Password", UserViewModel::GetInstance()->passwordBufferInput, IM_ARRAYSIZE(UserViewModel::GetInstance()->passwordBufferInput), ImGuiInputTextFlags_Password)) {
             std::cout << UserViewModel::GetInstance()->passwordBufferInput << std::endl;
-
         }
 
         if (ImGui::Button("Login", ImVec2(120, 0))) {

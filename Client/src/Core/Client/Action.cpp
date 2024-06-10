@@ -19,7 +19,7 @@ void Client::OnLoginFail() {
     MessageViewModel::GetInstance()->Reset();
 }
 void Client::OnLogoutSuccess() {
-    
+    // Close(); // test for attt
     UserViewModel::GetInstance()->Reset();
     MessageViewModel::GetInstance()->Reset();
 }
@@ -83,7 +83,6 @@ void Client::OnGetUsersOnlineSuccess() {
     for (const auto& user : responseData["users"]) {
         UserViewModel::GetInstance()->UsersOnline.push_back(User(user["id"], user["username"]));
     }
-    // UserViewModel::GetInstance()->UsersOnline.push_back();
 }
 
 }

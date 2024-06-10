@@ -19,24 +19,26 @@ void ListUserOnilne::Render() {
                 UserViewModel::GetInstance()->UsersOnline.clear();
                 isShowing = false;
             }
-            
-            for (auto &user : UserViewModel::GetInstance()->UsersOnline) {
-                if (ImGui::Button(user.username.c_str(), ImVec2(280, 45))) {
-                    MessageViewModel::GetInstance()->OnGetOrCreateConversationOfTwoUser(UserViewModel::GetInstance()->GetId(), user.id);
+            auto userOnline = UserViewModel::GetInstance()->UsersOnline;
+            for (size_t i = 0; i < userOnline.size(); i++) {
+                if (ImGui::Button(userOnline[i].username.c_str(), ImVec2(280, 45))) {
+                    MessageViewModel::GetInstance()->OnGetOrCreateConversationOfTwoUser(UserViewModel::GetInstance()->GetId(), userOnline[i].id);
                 }
                 if(MessageViewModel::GetInstance()->CurrentConversation.isGroup) {
-                    int idToCheck = user.id;
+                    int idToCheck = userOnline[i].id;
                     auto it = std::find_if(MessageViewModel::GetInstance()->CurrentConversation.members.begin(), MessageViewModel::GetInstance()->CurrentConversation.members.end(), [idToCheck](const User& usercheck) {
                         return usercheck.id == idToCheck;
                     });
                     if (it == MessageViewModel::GetInstance()->CurrentConversation.members.end()) {
                         ImGui::SameLine();
-                        if (ImGui::Button("+", ImVec2(35, 35))) {
+                        std::string buttonLabel = "+##" + std::to_string(i);
+                        if (ImGui::Button(buttonLabel.c_str(), ImVec2(35, 35))) {
                             UserViewModel::GetInstance()->OnInviteUser(MessageViewModel::GetInstance()->CurrentConversation.id, idToCheck);
                         }
                     } 
                 }
             }
+           
         }
         ImGui::EndPopup();
 
