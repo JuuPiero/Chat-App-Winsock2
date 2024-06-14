@@ -10,20 +10,14 @@ public:
         LOGIN = 0,
         LOGOUT = 1,
         SEND_MESSAGE = 2,
-       
+        SIGNUP = 3,
         GET_USERS_ONLINE = 4,
-
         GET_OR_CREATE_CONVERSATION_OF_TWO_USER = 5,
-
         INVITE_USER_TO_CONVERSATION = 6,
-        ACCEPT_INVITE = 25,
-
-        //CONVERSATION
         GET_CONVERSATION = 20,
         CREATE_CONVERSATION = 21,
-
-        SEND_MESSAGE_TO_ALL,
-        SEND_MESSAGE_TO_GROUP,
+        ACCEPT_INVITE = 25,
+        LEFT_GROUP_CHAT = 30        
     };
 public:
     ~Client();
@@ -31,18 +25,14 @@ public:
     void Close();
     static Client* GetInstance();
     void SendCommand(const std::string& command);
-
-    // 
     void OnLoginSuccess();
     void OnLoginFail();
     void OnLogoutSuccess();
     void OnGetConversationSuccess();
-
     void OnGetUsersOnlineSuccess();
-
-
     void OnReceiveMessageSuccess();
     void OnAcceptJoinConversation();
+    void OnLeftGroupChatSuccess();
     bool Check(); 
 
 private:

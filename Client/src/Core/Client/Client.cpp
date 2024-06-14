@@ -62,34 +62,25 @@ void Client::ReceiveMessages() {
             std::cout << "Response message: " << std::string(responseData["message"]) << std::endl;
 
             switch (statusCode) {
-                case StatusCode::LOGIN_SUCCESS: {
+                case StatusCode::LOGIN_SUCCESS:
                     OnLoginSuccess();
                     break;
-                }
-                case StatusCode::LOGIN_FAILED_USER_NOT_EXIST: {
+                case StatusCode::LOGIN_FAILED_USER_NOT_EXIST: 
                     OnLoginFail();
                     break;
-                }
-                case StatusCode::LOGOUT_SUCCESS: {
+                case StatusCode::LOGOUT_SUCCESS:
                     OnLogoutSuccess();
                     break;
-                }
-               
-                case StatusCode::RECEIVE_MESSAGE_SUCCESS: { // 1messsage
+                case StatusCode::RECEIVE_MESSAGE_SUCCESS:
                     OnReceiveMessageSuccess();
                     break;
-                }
-                case StatusCode::GET_USERS_ONLINE_SUCCESS: {
+                case StatusCode::GET_USERS_ONLINE_SUCCESS:
                     OnGetUsersOnlineSuccess();
                     break;
-                }
-                case StatusCode::GET_CONVERSATION_SUCCSESS: {
+                case StatusCode::GET_CONVERSATION_SUCCSESS:
                     OnGetConversationSuccess();
-
                     break;
-                }
                 case StatusCode::CREATE_CONVERSATION_SUCCSESS: {
-                        
                     MessageViewModel::GetInstance()->Conversations.push_back(Conversation(jsonObject["conversation_id"], jsonObject["conversation_name"], jsonObject["is_group"]));
                     MessageViewModel::GetInstance()->CurrentConversation = MessageViewModel::GetInstance()->Conversations.back();
                     break;
@@ -101,24 +92,23 @@ void Client::ReceiveMessages() {
                         AcceptModal::message = responseData["message"];
                         AcceptModal::conversationId = responseData["conversation_id"];
                     }
-                    // UserViewModel::GetInstance()->OnReceiveInvite()
                     break;
                 }
-                case StatusCode::ACCEPT_JOIN_IN_CONVERSATION_SUCCSESS: {
+                case StatusCode::ACCEPT_JOIN_IN_CONVERSATION_SUCCSESS:
                     OnAcceptJoinConversation();
                     break;
-                }
-
                 case StatusCode::GET_OR_CREATE_CONVERSATION_OF_TWO_USER_SUCCSESS: {
-                    // /_______________________________
                     if(jsonObject["user_id_1"] == UserViewModel::GetInstance()->CurrentUser.id ) {
                         MessageViewModel::GetInstance()->CurrentConversation = Conversation(jsonObject["conversation_id"], jsonObject["conversation_name"], false);
-                        // MessageViewModel::GetInstance()->CurrentConversation.members.push_back(User())
                         if(!jsonObject["exist"]) {
                             MessageViewModel::GetInstance()->Conversations.push_back(MessageViewModel::GetInstance()->CurrentConversation);
                         }
                         MessageViewModel::GetInstance()->OnGetConversation(UserViewModel::GetInstance()->GetId(), jsonObject["conversation_id"]);
                     }
+                    break;
+                }
+                case StatusCode::LEFT_GROUP_CHAT_SUCCSESS: {
+                    OnLeftGroupChatSuccess();
                     break;
                 }
                 default:
@@ -144,9 +134,7 @@ void Client::Close() {
     closesocket(m_ClientSocket);
 }
 void Client::ShutDown() {
-    if(UserViewModel::GetInstance()->IsLoggedIn()) {
-        UserViewModel::GetInstance()->OnUserLogout();
-    }
+    
     std::cout << "Free Client Instance" << std::endl;
     Close();
     WSACleanup();

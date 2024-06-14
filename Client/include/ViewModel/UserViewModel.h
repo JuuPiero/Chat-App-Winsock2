@@ -7,20 +7,18 @@ namespace Piero {
 class UserViewModel {
 public:
     void OnUserLogin(const std::string& username, const std::string& password);
-    void OnUserRegister();
     void OnUserLogout();
     void OnGetAllUsersOnline();
     void OnSendMessage(int conversationId, std::string message, bool isQuitMessage = false);
-
     void OnCreateConversation(const std::string& name);
-
     void OnInviteUser(int conversationId, const int& userId);
-    // void OnReceiveInvite(int userId, int conversationId, bool isAccept = false);
     void OnAcceptInvite(int conversationId);
-    // void OnDeclineInvite(int userId, int conversationId);
+    void OnLeftGroupChat();
+    void OnSignup(const std::string& username, const std::string& password);
+
+
     ~UserViewModel() = default;
     static UserViewModel* GetInstance();
-
     inline bool IsLoggedIn() const { return m_IsLoggedIn; };
 
     inline void SetLogin(bool b) { m_IsLoggedIn = b; }

@@ -70,7 +70,6 @@ void Server::Run() {
     }
     uint32_t id = GetId();
     // Add client socket to vector
-    // m_ClientSockets.push_back(clientSocket);
     m_ClientSockets[id] = clientSocket;
     // Create a thread to handle client
     std::thread handlerThread(&Server::ClientHandler, this, clientSocket, id);
@@ -94,7 +93,7 @@ void Server::ClientHandler(SOCKET clientSocket, uint32_t clientSocketId) {
 
             // requestData = json::parse(std::string(recvbuf));
             json requestData = json::parse(std::string(recvbuf));
-            json jsonObject = json::parse(std::string(recvbuf));
+            // json jsonObject = json::parse(std::string(recvbuf));
 
             std::cout << "message from client: " << std::endl;
             std::cout << requestData.dump(4) << std::endl;
@@ -106,50 +105,50 @@ void Server::ClientHandler(SOCKET clientSocket, uint32_t clientSocketId) {
                 std::string password = requestData["data"]["password"];
                 OnUserLogin(clientSocketId, username, password);
             }
-            else if(command == Command::LOGOUT) {
-                std::string username = jsonObject["data"]["username"];
-                std::string password = jsonObject["data"]["password"];
-                OnUserLogout(clientSocket, username, password);
+            else if(command == Command::SIGNUP) {
+                std::string username = requestData["data"]["username"];
+                std::string password = requestData["data"]["password"];
+                OnUserSignup(clientSocketId, username, password);
             }
-
+            else if(command == Command::LOGOUT) {
+                std::string username = requestData["data"]["username"];
+                std::string password = requestData["data"]["password"];
+                OnUserLogout(clientSocketId, username, password);
+            }
             else if(command == Command::SEND_MESSAGE) {
-                std::cout << "Thuc hien chuc nang gui tin nhan TRONG 1 HOI THOAI" << std::endl;
-                int senderId = jsonObject["sender_id"];
-                int conversationId = jsonObject["conversation_id"];
-                std::string message = jsonObject["message"];
-                bool isQuitMessage = jsonObject["is_quit_message"];
-                // int receiverId = jsonObject["receiver_id"];
+                int senderId = requestData["sender_id"];
+                int conversationId = requestData["conversation_id"];
+                std::string message = requestData["message"];
+                bool isQuitMessage = requestData["is_quit_message"];
                 OnUserSendMessage(clientSocketId, senderId, conversationId, message, isQuitMessage);
             }
             else if(command == Command::GET_USERS_ONLINE) {
-                int userId = jsonObject["user_id"];
+                int userId = requestData["user_id"];
                 OnUserGetUsersOnline(clientSocketId, userId);
             }
-
             else if(command == Command::CREATE_CONVERSATION) {
                 int userId = requestData["user_id"];
                 std::string name = requestData["conversation_name"];
                 OnUserCreateConversation(clientSocket, userId, name);
             }
-
             else if(command == Command::GET_CONVERSATION) {
-                int userId = jsonObject["user_id"];
-                int conversationId = jsonObject["conversation_id"];
-                OnUserGetConversation(clientSocket, userId, conversationId);
+                int userId = requestData["user_id"];
+                int conversationId = requestData["conversation_id"];
+                OnUserGetConversation(clientSocketId, userId, conversationId);
             }
-
             else if(command == Command::INVITE_USER_TO_CONVERSATION) {
                 OnUserInviteUserToConversation(clientSocket, requestData["sender_id"], requestData["user_id"], requestData["conversation_id"]);
             }
             else if(command == Command::ACCEPT_INVITE) {
                 OnUserAcceptInvite(clientSocket, requestData["user_id"], requestData["conversation_id"]);
             }
-
-            //
             else if(command == Command::GET_OR_CREATE_CONVERSATION_OF_TWO_USER) {
-                OnUserGetConversationOfTwoUsers(clientSocketId, jsonObject["user_id_1"], jsonObject["user_id_2"]);
+                OnUserGetConversationOfTwoUsers(clientSocketId, requestData["user_id_1"], requestData["user_id_2"]);
             }
-           
+            else if(command == Command::LEFT_GROUP_CHAT) {
+                OnUserLeftGroupChat(clientSocketId, requestData["user_id"], requestData["conversation_id"]);
+            }
+            
         } else if (iResult == 0) {
             std::cout << "Connection closed by client" << std::endl;
         } else {
@@ -158,12 +157,8 @@ void Server::ClientHandler(SOCKET clientSocket, uint32_t clientSocketId) {
     } while (iResult > 0);
 
     closesocket(clientSocket);
-    // Remove socket from vector
     m_ClientSockets.erase(clientSocketId);
-    // auto it = std::find(m_ClientSockets.begin(), m_ClientSockets.end(), clientSocket);
-    // if (it != m_ClientSockets.end()) {
-    //     m_ClientSockets.erase(it);
-    // }
+
 }
 
 Server::~Server() {}

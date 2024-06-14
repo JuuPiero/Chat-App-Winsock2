@@ -57,8 +57,9 @@ void User::SetOffline() {
     std::string query = "UPDATE users SET status = '" + std::to_string(0) +  "' WHERE id = " + std::to_string(m_Id);
     Connection::GetInstance()->Query(query.c_str());
 }
-void User::Create(const std::string& username, const std::string& password) {
+void User::Create(std::string username, std::string password) {
     std::string query = "INSERT INTO users (username, password) VALUES ('" + username + "', '" + password + "')";
+    Connection::GetInstance()->Query(query.c_str());
 }
 std::string User::GetUsernameById(const int id) {
     std::string query = "SELECT username FROM users WHERE id = " + std::to_string(id);

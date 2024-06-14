@@ -50,13 +50,12 @@ void ModalLoginForm(const char* id)  {
         if (ImGui::Button("Login", ImVec2(120, 0))) {
             //TODO: Connect server
             UserViewModel::GetInstance()->OnUserLogin(std::string(UserViewModel::GetInstance()->usernameBufferInput), std::string(UserViewModel::GetInstance()->passwordBufferInput));
-          
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
         
         if (ImGui::Button("Register", ImVec2(120, 0))) {
-            // showModal = false;
+            UserViewModel::GetInstance()->OnSignup(std::string(UserViewModel::GetInstance()->usernameBufferInput), std::string(UserViewModel::GetInstance()->passwordBufferInput));
             ImGui::CloseCurrentPopup();
         }
 
@@ -125,6 +124,5 @@ void MessageElement(Message message) {
     }
     ImGui::EndChild();
 }
-
 
 }

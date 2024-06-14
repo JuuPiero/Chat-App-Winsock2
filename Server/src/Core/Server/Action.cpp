@@ -60,35 +60,32 @@ void Server::OnUserLogin(uint32_t clientSocketId, std::string username, std::str
     }
 }
 
-void Server::OnUserLogout(SOCKET clientSocket, std::string& username, std::string& password) {
-    // SOCKET clientSocket = m_ClientSockets[clientSocketId];
-    
+void Server::OnUserLogout(uint32_t clientSocketId, std::string& username, std::string& password) {
+    spdlog::info("Request logout from user: {}", username);
+    SOCKET clientSocket = m_ClientSockets[clientSocketId];
     auto user = User::GetUserByUserName(username);
-    spdlog::trace("Request logout from user: {}", username);
     user->SetOffline();
-
+    
     json newJsonObject;
     newJsonObject["status"] = StatusCode::LOGOUT_SUCCESS;
     newJsonObject["message"] = "User: " + user->GetUsername() + " logout successully ";
-
     if(m_UserOnlines[user->GetUsername()]) {
         m_UserOnlines.erase(user->GetUsername());
     }
-
     iResult = send(clientSocket, newJsonObject.dump().c_str(),  newJsonObject.dump().size(), 0);
     if (iResult == SOCKET_ERROR) {
         spdlog::error("send failed: ", WSAGetLastError());
     }
-    // if(!m_UserOnlines[username].empty()) {
-    //     m_UserOnlines.erase(username);
-    // }
-
     spdlog::info("User logout successully: {} ", username);
 }
-
+void Server::OnUserSignup(uint32_t clientSocketId, std::string username, std::string password) {
+    // SOCKET clientSocket = m_ClientSockets[clientSocketId];
+    spdlog::info("a client create new accout");
+    User::Create(username, password);
+    OnUserLogin(clientSocketId, username, password);
+}
 
 void Server::OnUserSendMessage(uint32_t clientSocketId, int senderId, int conversationId, std::string& message, bool isQuitMessage) {
-    // auto username = User::GetUsernameById(senderId);
     auto clientSocket = m_ClientSockets[clientSocketId];
     auto conversation = Conversation::GetConversationById(conversationId);
     spdlog::info("{} send message: {} to conversation: {}", User::GetUsernameById(senderId), message, conversationId);
@@ -146,8 +143,8 @@ void Server::OnUserGetUsersOnline(uint32_t clientSocketId, int userId) {
     }
 }
 
-void Server::OnUserGetConversation(SOCKET& clientSocket, int userId, int conversationId) {
-    // SOCKET clientSocket = m_ClientSockets[clientSocketId];
+void Server::OnUserGetConversation(uint32_t clientSocketId, int userId, int conversationId) {
+    SOCKET clientSocket = m_ClientSockets[clientSocketId];
     spdlog::info("Request get all messages of conservation with id: {} from user: {}", conversationId, User::GetUsernameById(userId));
     auto conversation = Conversation::GetConversationById(conversationId);
     json newJsonObject;
@@ -241,13 +238,9 @@ void Server::OnUserCreateConversation(SOCKET& clientSocket, int userId, std::str
     spdlog::info("{} create conversation with name: {}", User::GetUsernameById(userId), convsersationName);
 
     json responseJson;
-
     int conversationId = Conversation::CreateConversation(userId, convsersationName, true);
-
     responseJson["status"] =  StatusCode::CREATE_CONVERSATION_SUCCSESS;
     responseJson["message"] =  User::GetUsernameById(userId) + " created group chat name:  " + convsersationName + " successfully";
-
-
     responseJson["conversation_id"] = conversationId;
     responseJson["conversation_name"] = convsersationName;
     responseJson["is_group"] = true;
@@ -259,13 +252,11 @@ void Server::OnUserCreateConversation(SOCKET& clientSocket, int userId, std::str
 
 }
 
-
 void Server::OnUserInviteUserToConversation(SOCKET& clientSocket, int senderId, int userId, int conversationId) {
     auto conversation = Conversation::GetConversationById(conversationId);
     spdlog::info("User: {} invite user: {} join in conversation : {}", User::GetUsernameById(senderId), User::GetUsernameById(userId), conversation->GetName());
 
     json responseJson;
-
     responseJson["status"] =  StatusCode::SEND_INVITATION_TO_JOIN_CONVERSATION_SUCCSESS;
     responseJson["message"] = User::GetUsernameById(senderId) + " invites you to join the conversation :" + conversation->GetName();
     responseJson["sender_id"] =  senderId;
@@ -285,21 +276,17 @@ void Server::OnUserInviteUserToConversation(SOCKET& clientSocket, int senderId, 
 
 }
 
-
 void Server::OnUserAcceptInvite(SOCKET& clientSocket, int userId, int conversationId) {
     auto conversation = Conversation::GetConversationById(conversationId);
     std::string query = "INSERT INTO participants (user_id, conversation_id) VALUES (" + std::to_string(userId) +", " + std::to_string(conversationId) + ")";
     Connection::GetInstance()->Query(query.c_str());
 
-
     spdlog::info("User: {} accepted to join in conversation : {}", User::GetUsernameById(userId), User::GetUsernameById(userId), conversation->GetName());
    
     json newJsonObject;
-
     newJsonObject["user_id"] = userId;
     newJsonObject["status"] = StatusCode::ACCEPT_JOIN_IN_CONVERSATION_SUCCSESS;
     newJsonObject["message"] = "accepted to join in conversation successfully";
-
     newJsonObject["conversation_id"] = conversationId;
     newJsonObject["name"] = conversation->GetName();
     newJsonObject["is_group"] = conversation->IsGroup();
@@ -316,7 +303,6 @@ void Server::OnUserAcceptInvite(SOCKET& clientSocket, int userId, int conversati
     }
     newJsonObject["messages_count"] = messages.size();
 
-
     auto members = Conversation::GetMembersExcept(userId, conversationId);
     for (size_t i = 0; i < members.size(); i++) {
         json memberObject;
@@ -325,6 +311,20 @@ void Server::OnUserAcceptInvite(SOCKET& clientSocket, int userId, int conversati
         newJsonObject["members"][i] = memberObject;
     }
     iResult = send(clientSocket, newJsonObject.dump().c_str(), newJsonObject.dump().size(), 0);
+    if (iResult == SOCKET_ERROR) {
+        std::cout << "send failed: " << WSAGetLastError() << std::endl;
+    }
+}
+void Server::OnUserLeftGroupChat(uint32_t clientSocketId, int userId, int conversationId) {
+    SOCKET clientSocket = m_ClientSockets[clientSocketId];
+    std::string query = "DELETE FROM participants WHERE user_id = " + std::to_string(userId) + " AND conversation_id = " + std::to_string(conversationId);
+    Connection::GetInstance()->Query(query.c_str());
+    json responseData;
+    responseData["status"] = StatusCode::LEFT_GROUP_CHAT_SUCCSESS;
+    responseData["message"] = "left the group chat successfully";
+    responseData["user_id"] = userId;
+    responseData["conversation_id"] = conversationId;
+    iResult = send(clientSocket, responseData.dump().c_str(), responseData.dump().size(), 0);
     if (iResult == SOCKET_ERROR) {
         std::cout << "send failed: " << WSAGetLastError() << std::endl;
     }

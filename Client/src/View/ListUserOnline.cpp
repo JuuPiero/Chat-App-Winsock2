@@ -41,7 +41,6 @@ void ListUserOnilne::Render() {
            
         }
         ImGui::EndPopup();
-
     }
 }
 

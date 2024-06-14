@@ -28,7 +28,7 @@ public:
 
     static std::shared_ptr<User> GetUserByUserName(const std::string& username);
 
-    static void Create(const std::string& username, const std::string& password);
+    static void Create(std::string username, std::string password);
 
     static bool Attempt(const std::string& username, const std::string& password);
     static std::vector<std::shared_ptr<User>> GetAllUserOnline(int id);

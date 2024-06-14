@@ -151,8 +151,11 @@ void Application::LoadDotenv(const std::string& filepath)  {
 }
 
 void Application::ShutDown() {
-    Client::GetInstance()->ShutDown();
+    if(UserViewModel::GetInstance()->IsLoggedIn()) {
+        UserViewModel::GetInstance()->OnUserLogout();
+    }
     m_Window->ShutDown();
+    Client::GetInstance()->ShutDown();
     UserViewModel::GetInstance()->ShutDown();
     MessageViewModel::GetInstance()->ShutDown();
     delete s_Instance;

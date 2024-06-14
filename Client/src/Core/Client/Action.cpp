@@ -84,5 +84,13 @@ void Client::OnGetUsersOnlineSuccess() {
         UserViewModel::GetInstance()->UsersOnline.push_back(User(user["id"], user["username"]));
     }
 }
+void Client::OnLeftGroupChatSuccess() {
+    int idToRemove = MessageViewModel::GetInstance()->CurrentConversation.id; // ID cần xóa
+    MessageViewModel::GetInstance()->Conversations.erase(std::remove_if(MessageViewModel::GetInstance()->Conversations.begin(), MessageViewModel::GetInstance()->Conversations.end(), [idToRemove](const Conversation& conversation) {
+        return conversation.id == idToRemove;
+    }), MessageViewModel::GetInstance()->Conversations.end());
+    MessageViewModel::GetInstance()->CurrentConversation = Conversation();
+    MessageViewModel::GetInstance()->Messages.clear();
+}
 
 }

@@ -72,11 +72,6 @@ void UserViewModel::OnInviteUser(int conversationId, const int& userId) {
     Client::GetInstance()->SendCommand(requestJson.dump());
 }
 
-// void UserViewModel::OnReceiveInvite(int userId, int conversationId, bool isAccept) {
-//     // show modal
-//     AcceptModal::isShowing = true;
-// }
-
 void UserViewModel::OnAcceptInvite(int conversationId) {
     json requestJson;
     requestJson["command"] = Client::Command::ACCEPT_INVITE;
@@ -85,7 +80,22 @@ void UserViewModel::OnAcceptInvite(int conversationId) {
     Client::GetInstance()->SendCommand(requestJson.dump());
 }
 
+void UserViewModel::OnLeftGroupChat() {
+    json requestJson;
+    requestJson["command"] = Client::Command::LEFT_GROUP_CHAT;
+    requestJson["conversation_id"] = MessageViewModel::GetInstance()->CurrentConversation.id;
+    requestJson["user_id"] = CurrentUser.id;
+    Client::GetInstance()->SendCommand(requestJson.dump());
+}
 
+void UserViewModel::OnSignup(const std::string& username, const std::string& password) {
+    json requestJson;
+    requestJson["command"] = Client::Command::SIGNUP;
+    requestJson["data"] = { 
+        { "username", username }, 
+        { "password", password } 
+    };
+    Client::GetInstance()->SendCommand(requestJson.dump());
+}
 
-void UserViewModel::OnUserRegister() {}
 }

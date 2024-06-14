@@ -7,8 +7,14 @@
 namespace Piero {
 
 void ChatBox::Render() {
-    ImGui::Text(MessageViewModel::GetInstance()->CurrentConversation.isGroup ? MessageViewModel::GetInstance()->CurrentConversation.name.c_str() : "");
-    ImGui::SameLine();
+    if(MessageViewModel::GetInstance()->CurrentConversation.isGroup) {
+        ImGui::Text(MessageViewModel::GetInstance()->CurrentConversation.name.c_str());
+        ImGui::SameLine();
+        if(ImGui::Button("Left the Group chat")) {
+            UserViewModel::GetInstance()->OnLeftGroupChat();
+        }
+    }
+  
    
     ImGui::Separator();
     ImGui::BeginChild("Message area", ImVec2(0, Application::GetInstance()->GetWindowHeight() - 100));
